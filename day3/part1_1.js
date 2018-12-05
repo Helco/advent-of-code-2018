@@ -9,17 +9,21 @@ function clearId(map, id) {
     }
 }
 
+var exceptIds = new Map();
+
 function drawClaim(map, claim) {
     var didOverlap = 0;
     for (var x = claim.x; x < claim.x + claim.w; x++) {
         for (var y = claim.y; y < claim.y + claim.h; y++) {
             var cell = (y * SIZE) + x;
             if (map[cell] === 'x') {
+                exceptIds.set(claim.id, true);
                 continue;
             }
             else if (map[cell] > 0) {
                 didOverlap++;
-                clearId(map, map[cell]);
+                exceptIds.set(claim.id, true);
+                exceptIds.set(map[cell], true);
                 map[cell] = 'x';
             }
             else
@@ -27,6 +31,16 @@ function drawClaim(map, claim) {
         }
     }
     return didOverlap;
+}
+
+function findIds(map) {
+    var ids = new Map();
+    for (const cell of map) {
+        if (cell !== 'x' && cell !== undefined && !exceptIds.has(cell))
+            ids.set(cell,true);
+    }
+    for (const claim of ids)
+        console.log("found ", claim);
 }
 
 function extractClaim(line, claim) {
@@ -46,6 +60,7 @@ function countOverlaps(list) {
         extractClaim(line, claim);
         count += drawClaim(map, claim);
     }
+    findIds(map);
     return count;
 }
 
